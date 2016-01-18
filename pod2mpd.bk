@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ "$#" -eq 1 ]; then
+	curl $1|grep "<enclosure url"|cut -d'"' -f2|mpc add
+else
+	echo "Usage: $0 linktorss" >&2
+	exit 1
+fi
