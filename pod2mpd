@@ -2,10 +2,11 @@
 
 myname="$0"
 fetchcmd=curl
+filter=cat
 
-args=$(getopt f $*)
+args=$(getopt fi $*)
 if [ $? -ne 0 ]; then
-	echo "Usage: $myname [-f] linktorss" >& 2
+	echo "Usage: $myname [-fi] linktorss" >& 2
 	exit 1
 fi
 
@@ -13,14 +14,24 @@ set -- $args
 while [ "$1" != -- ]; do
 	case "$1" in
 		-f) fetchcmd=cat ;;
+		-i)
+			if tail -r /dev/null > /dev/null 2>&1; then
+				filter="tail -r"
+			elif tac /dev/null > /dev/null 2>&1; then
+				filter=tac
+			else
+				echo "Don't know how to reverse order!"
+				exit 1
+			fi
+			;;
 	esac
 	shift
 done
 shift
 
 if [ "$#" -eq 1 ]; then
-	$fetchcmd $1|grep "<enclosure url"|cut -d'"' -f2|mpc add
+	$fetchcmd $1|grep "<enclosure url"|cut -d'"' -f2|$filter|mpc add
 else
-	echo "Usage: $myname linktorss" >&2
+	echo "Usage: $myname [-fi] linktorss" >&2
 	exit 1
 fi
