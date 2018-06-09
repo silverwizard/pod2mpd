@@ -3,10 +3,13 @@
 myname="$0"
 fetchcmd=curl
 filter=cat
+hostarg=""
+eval cast=\${$#}
 
-args=$(getopt fi $*)
+
+args=$(getopt fih $*)
 if [ $? -ne 0 ]; then
-	echo "Usage: $myname [-fi] linktorss" >& 2
+	echo "Usage: $myname [-fih] linktorss" >& 2
 	exit 1
 fi
 
@@ -24,14 +27,18 @@ while [ "$1" != -- ]; do
 				exit 1
 			fi
 			;;
+		-h)
+			hostarg="--host=$3"
+			;;
 	esac
 	shift
 done
 shift
 
-if [ "$#" -eq 1 ]; then
-	$fetchcmd $1|grep "<enclosure url"|cut -d'"' -f2|$filter|mpc add
+if [ $# -lt 3 ]; then
+	$fetchcmd $cast|grep "<enclosure url"|sed "s/^.*url=//"|cut -d'"' -f2|$filter|mpc $hostarg add
 else
-	echo "Usage: $myname [-fi] linktorss" >&2
+	echo $0 $1 $2 $3 $4 $5
+	echo "Usage: $myname [-fih] linktorss" >&2
 	exit 1
 fi
